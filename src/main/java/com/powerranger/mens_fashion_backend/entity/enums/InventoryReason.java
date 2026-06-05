@@ -1,9 +1,27 @@
 package com.powerranger.mens_fashion_backend.entity.enums;
 
+import jakarta.persistence.EnumeratedValue;
+
+import java.util.Arrays;
+
 public enum InventoryReason {
-    purchase,
-    sale,
-    return_,
-    cancellation,
-    adjustment
+    purchase("purchase"),
+    sale("sale"),
+    return_("return"),
+    cancellation("cancellation"),
+    adjustment("adjustment");
+
+    @EnumeratedValue
+    private final String value;
+
+    InventoryReason(String value) {
+        this.value = value;
+    }
+
+    public static InventoryReason fromValue(String value) {
+        return Arrays.stream(values())
+                .filter(reason -> reason.value.equalsIgnoreCase(value) || reason.name().equalsIgnoreCase(value))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Unknown inventory reason: " + value));
+    }
 }

@@ -1,0 +1,9 @@
+.git
+.github
+.vscode
+target
+*.iml
+*.log
+.env
+.DS_Store
+docker-compose.override.yml

@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -98,6 +99,7 @@ public class OrderServiceImpl implements OrderService {
         order.setCoupon(coupon);
 
         order.setItems(new ArrayList<>());
+        List<InventoryMovement> inventoryMovements = new ArrayList<>();
         for (CartItem cartItem : cart.getItems()) {
             // Pessimistic write lock for variant stock management
             ProductVariant variant = productVariantRepository.findByIdForUpdate(cartItem.getVariant().getId())
@@ -129,8 +131,11 @@ public class OrderServiceImpl implements OrderService {
             movement.setReason(InventoryReason.sale);
             movement.setOrder(order);
             movement.setNote("Order purchase: " + order.getOrderCode());
-            inventoryMovementRepository.save(movement);
+            inventoryMovements.add(movement);
         }
+
+        ShopOrder savedOrder = orderRepository.save(order);
+        inventoryMovementRepository.saveAll(inventoryMovements);
 
         // Coupon usage
         if (coupon != null) {
@@ -140,10 +145,9 @@ public class OrderServiceImpl implements OrderService {
             CouponUsage usage = new CouponUsage();
             usage.setUser(user);
             usage.setCoupon(coupon);
+            usage.setOrder(savedOrder);
             couponUsageRepository.save(usage);
         }
-
-        ShopOrder savedOrder = orderRepository.save(order);
 
         // Record status history
         OrderStatusHistory history = new OrderStatusHistory();
@@ -198,6 +202,7 @@ public class OrderServiceImpl implements OrderService {
         ShopOrder order = orderRepository.findWithItemsById(orderId)
                 .orElseThrow(() -> new NotFoundException("Order not found"));
 
+        OrderStatus oldStatus = order.getStatus();
         OrderStatus newStatus = OrderStatus.valueOf(request.status().toLowerCase());
         
         // Stock recovery on cancellation
@@ -223,7 +228,7 @@ public class OrderServiceImpl implements OrderService {
 
         OrderStatusHistory history = new OrderStatusHistory();
         history.setOrder(savedOrder);
-        history.setOldStatus(order.getStatus());
+        history.setOldStatus(oldStatus);
         history.setNewStatus(newStatus);
         history.setNote(request.note());
         orderStatusHistoryRepository.save(history);

@@ -35,7 +35,7 @@ public class InventoryServiceImpl implements InventoryService {
         InventoryMovement movement = new InventoryMovement();
         movement.setVariant(variant);
         movement.setChangeQty(quantity);
-        movement.setReason(InventoryReason.valueOf(reason.toLowerCase()));
+        movement.setReason(InventoryReason.fromValue(reason));
         movement.setNote(note);
 
         variant.setStockQuantity(variant.getStockQuantity() + quantity);
