@@ -1,6 +1,6 @@
 package com.powerranger.mens_fashion_backend.repository;
 
-import com.powerranger.mens_fashion_backend.domain.ShopOrder;
+import com.powerranger.mens_fashion_backend.entity.ShopOrder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;

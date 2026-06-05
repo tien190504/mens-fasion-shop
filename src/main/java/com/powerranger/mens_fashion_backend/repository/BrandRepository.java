@@ -1,6 +1,6 @@
 package com.powerranger.mens_fashion_backend.repository;
 
-import com.powerranger.mens_fashion_backend.domain.Brand;
+import com.powerranger.mens_fashion_backend.entity.Brand;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

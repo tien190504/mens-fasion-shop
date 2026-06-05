@@ -1,6 +1,6 @@
 package com.powerranger.mens_fashion_backend.repository;
 
-import com.powerranger.mens_fashion_backend.domain.Coupon;
+import com.powerranger.mens_fashion_backend.entity.Coupon;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
