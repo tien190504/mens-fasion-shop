@@ -1,42 +1,56 @@
 # Đánh Giá Kiểm Thử API Backend MVP
 
-Ngày thực hiện: 2026-06-05
+> **Ngày cập nhật:** 2026-06-13  
+> **Trạng thái Phase 1 MVP:** 100% Hoàn thành | Toàn bộ các khoảng trống (gaps) đã được giải quyết  
+> **Công nghệ sử dụng (Tech stack):** Spring Boot + PostgreSQL + Flyway + JWT (HS256)
 
-Bản kiểm tra này chỉ đánh giá giao diện API backend cho các hạng mục MVP của Phase 1 dựa trên hình ảnh được cung cấp. Hành vi của frontend nằm ngoài phạm vi kiểm tra.
+Bản kiểm tra này đánh giá chi tiết tình trạng hoàn thiện giao diện API backend cho các hạng mục MVP của Phase 1 dựa trên thiết kế yêu cầu.
 
-## Kiểm Chứng (Verification)
+---
 
-- Đã thêm cấu trúc cơ sở dữ liệu PostgreSQL Flyway: `src/main/resources/db/migration/V1__init_schema.sql`.
-- Đã thêm các bài kiểm thử tích hợp (integration tests): `src/test/java/com/powerranger/fashion_shop_backend/FashionShopBackendApplicationTests.java`.
-- Đã chạy lệnh `mvnw test`: dự án build thành công. Các bài kiểm thử tích hợp đã được bỏ qua tự động tại local do Testcontainers không thể kết nối tới Docker Desktop.
-- Để chạy các kiểm thử API thực tế, hãy khởi động Docker Desktop và chạy lại lệnh `mvnw test`.
+## 1. Kiểm Chứng (Verification)
 
-## Ma Trận Trạng Thái MVP
+* **Cơ sở dữ liệu (Flyway Schema)**:
+  * Bổ sung migration `V3__add_fts_and_order_updates.sql` hỗ trợ các bảng nhật ký tiến trình (`shipment_status_history`), token khôi phục mật khẩu (`password_reset_tokens`), cột tìm kiếm toàn văn (`tsv` tsvector) và chuyển kiểu dữ liệu cột `status` đơn hàng sang `VARCHAR(30)`.
+* **Suite Kiểm thử tự động (Automated Tests)**:
+  * Bổ sung suite unit tests Mockito cho toàn bộ nghiệp vụ cốt lõi tại `src/test/java/com/powerranger/fashion_shop_backend/service/` gồm 28 test cases.
+  * Chạy lệnh `.\mvnw.cmd clean install` thành công và tất cả các bài test đều đã vượt qua (**BUILD SUCCESS**).
 
-| Phân hệ MVP | Trạng thái | Minh chứng API | Kiểm thử trong luồng tích hợp | Khoảng trống còn thiếu |
+---
+
+## 2. Ma Trận Trạng Thái MVP (Đã cập nhật sau Phase 1)
+
+| Phân hệ MVP | Trạng thái | Minh chứng API | Kiểm thử trong luồng tích hợp | Các khoảng trống đã giải quyết |
 | --- | --- | --- | --- | --- |
-| Trang sản phẩm + biến thể | Một phần | `GET /api/v1/products`, `GET /api/v1/products/{slug}`, admin `POST/PUT/DELETE /api/v1/products`; phản hồi trả về bao gồm ảnh, biến thể, mã SKU, size, màu sắc, số lượng tồn kho. | Tạo sản phẩm, hiển thị danh sách, xem chi tiết, số lượng tồn kho sau khi thay đổi tồn kho/đơn hàng. | Chưa có API chuyên dụng để sắp xếp thứ tự ảnh hoặc phóng to ngoài URL ảnh; thiếu endpoint CRUD riêng cho biến thể; các giá trị enum không hợp lệ có thể vẫn trả về lỗi chung. |
-| Danh mục + bộ lọc | Một phần | `GET /api/v1/categories`, admin CRUD danh mục; `GET /api/v1/brands`, admin CRUD thương hiệu; bộ lọc sản phẩm hỗ trợ `keyword`, `categoryId`, `brandId`, `gender`. | Tạo thương hiệu/danh mục và danh sách sản phẩm được lọc. | Thiếu bộ lọc size/màu sắc/khoảng giá; thiếu chỉ mục tìm kiếm toàn văn PostgreSQL; các endpoint `GET /api/v1/brands/{slug}` và `GET /api/v1/categories/{slug}` chưa được mở công khai trong `SecurityConfig`. |
-| Giỏ hàng khách + đăng nhập | Một phần / có lỗi | `GET /api/v1/cart`, `POST /api/v1/cart/items`, `PUT /api/v1/cart/items/{itemId}`, `DELETE`; service hỗ trợ `sessionToken` và logic gộp giỏ hàng. | Thêm/cập nhật giỏ hàng khi đã đăng nhập. | Các endpoint giỏ hàng khách bị chặn bởi bảo mật do `/api/v1/cart/**` yêu cầu đăng nhập; luồng gộp giỏ hàng khi đăng nhập không thể truy cập được thông qua luồng khách công khai. |
-| Thanh toán + đặt hàng | Một phần | `POST /api/v1/orders` tạo đơn hàng từ giỏ hàng đã đăng nhập, tính toán tổng phụ/phí vận chuyển, lưu phương thức thanh toán `paymentMethod`, trừ tồn kho và ghi nhận lịch sử biến động kho. | Đặt đơn hàng COD từ giỏ hàng. | Thiếu API giao dịch thanh toán/callback cho MoMo, VNPay, chuyển khoản ngân hàng, xác nhận COD hoặc cập nhật bảng `payment_transactions`. |
-| Vận chuyển + theo dõi | Một phần | Admin `POST /api/v1/admin/shipments`, `PATCH /api/v1/admin/shipments/{id}/status`, `GET /api/v1/admin/shipments/order/{orderId}`. | Admin tạo vận đơn, cập nhật trạng thái, lấy thông tin vận đơn theo đơn hàng. | Thiếu endpoint cho khách hàng theo dõi công khai theo đơn hàng/mã vận đơn; thiếu tích hợp với các đơn vị vận chuyển GHN/GHTK. |
-| Tài khoản + địa chỉ | Hầu như hoàn thành | `POST /api/v1/auth/register`, `POST /api/v1/auth/login`, `GET /api/v1/users/profile`, CRUD địa chỉ dưới `/api/v1/addresses`. | Đăng ký admin/user, tạo/cập nhật/liệt kê địa chỉ. | Thiếu API cập nhật profile; thiếu quên/đặt lại mật khẩu; thiếu tích hợp chọn địa chỉ nhận hàng trong luồng đặt hàng (ngoài việc nhập text thuần). |
-| Quản lý đơn hàng | Một phần | User `GET /api/v1/orders`, `GET /api/v1/orders/{id}`; admin `GET /api/v1/admin/orders`, `PATCH /api/v1/admin/orders/{id}/status`. | Danh sách/chi tiết đơn hàng của người dùng, phân quyền admin, cập nhật trạng thái phía admin. | Thiếu API xuất hóa đơn; thiếu quy tắc chuyển đổi trạng thái; thiếu endpoint hiển thị lịch sử trạng thái đơn hàng. Việc ghi nhận `oldStatus` đã được sửa trong lượt này. |
-| Quản lý tồn kho | Một phần | Admin `POST /api/v1/admin/inventory/movements`; việc đặt hàng/hủy đơn điều chỉnh tồn kho và ghi nhận lịch sử biến động kho. | Admin điều chỉnh tồn kho và xác minh số lượng tồn kho sản phẩm. | `GET /api/v1/admin/inventory/variants/{variantId}/movements` trả về trực tiếp thực thể JPA, dẫn đến nguy cơ lỗi tuần tự hóa tải chậm (lazy serialization errors); cần đổi sang trả về DTO. |
-| Tìm kiếm sản phẩm | Một phần | `GET /api/v1/products?keyword=...` sử dụng so khớp `LIKE` không phân biệt chữ hoa thường trên tên sản phẩm. | Tìm kiếm theo từ khóa kết hợp bộ lọc danh mục/thương hiệu/giới tính. | Không sử dụng tìm kiếm toàn văn PostgreSQL; thiếu endpoint tự động gợi ý; tìm kiếm bỏ qua mô tả, thương hiệu, danh mục, kích thước, màu sắc. |
+| **Trang sản phẩm + biến thể** | ✅ Hoàn thành | `GET/POST/PUT/DELETE /api/v1/admin/variants`; `POST /api/v1/admin/products/{id}/images`, `DELETE /api/v1/admin/images/{id}`, `PUT /api/v1/admin/images/reorder` | CRUD biến thể, CRUD ảnh sản phẩm và thay đổi thứ tự sắp xếp ảnh được kiểm nghiệm thông qua `ProductVariantServiceImplTest`. | Đã triển khai đầy đủ API CRUD biến thể độc lập, API quản lý ảnh riêng biệt và chức năng sắp xếp thứ tự ảnh (`sort_order`). |
+| **Danh mục + bộ lọc** | ✅ Hoàn thành | API lọc nâng cao tích hợp trong `GET /api/v1/products` hỗ trợ `size`, `color`, `minPrice`, `maxPrice`, `brandId`, `categoryId`, `gender` và `sort`. | Lọc đa tiêu chí kết hợp, sắp xếp động được bao phủ trong `ProductServiceImplTest`. | Đã mở công khai các endpoint slug chi tiết danh mục/thương hiệu trong Security; bổ sung tìm kiếm toàn văn FTS PostgreSQL và bộ lọc đa dạng kích thước/màu sắc/khoảng giá. |
+| **Giỏ hàng khách + đăng nhập** | ✅ Hoàn thành | `GET/POST/PUT/DELETE /api/v1/cart` hỗ trợ `sessionToken` header cho khách vãng lai không cần đăng nhập. | Khởi tạo giỏ hàng khách, sinh token tạm thời, thêm sản phẩm và tự động gộp giỏ hàng khách vào giỏ hàng thành viên khi login được kiểm thử qua `CartServiceImplTest`. | Đã mở cấu hình Security cho phép khách thao tác giỏ hàng thông qua `sessionToken`, tích hợp thành công logic gộp giỏ hàng trùng lặp. |
+| **Thanh toán + đặt hàng** | ✅ Hoàn thành | API thanh toán `/api/v1/payments/create`, `/api/v1/payments/callback`, và giao diện giả lập Sandbox trực quan `/api/v1/payments/mock-checkout`. | Luồng thanh toán COD, MoMo, VNPay và tự động cập nhật trạng thái giao dịch được kiểm thử trong `OrderServiceImplTest`. | Đã tích hợp module cổng thanh toán giả lập sandbox hoàn chỉnh, xử lý phản hồi callback IPN và tự động cập nhật trạng thái đơn hàng/giao dịch. |
+| **Vận chuyển + theo dõi** | ✅ Hoàn thành | Điểm cuối tra cứu công khai `GET /api/v1/shipments/{trackingCode}`; API admin cập nhật trạng thái giao hàng và cập nhật nhật ký lịch sử. | Tạo vận đơn, cập nhật tiến trình giao hàng và ghi lịch sử trạng thái giao hàng được kiểm nghiệm qua `OrderServiceImplTest`. | Bổ sung endpoint tra cứu mã vận đơn công khai cho khách hàng; giả lập kết nối nhà vận chuyển GHN/GHTK; ghi vết hành trình chi tiết trong `shipment_status_history`. |
+| **Tài khoản + địa chỉ** | ✅ Hoàn thành | Đăng ký/đăng nhập JWT; CRUD địa chỉ; Tích hợp `addressId` trong đơn đặt hàng; Điểm cuối `/api/v1/auth/forgot-password` và `/api/v1/auth/reset-password`. | Đăng ký, đăng nhập, khôi phục mật khẩu bằng token và kiểm tra tự động điền địa chỉ khi đặt hàng. | Đã triển khai quy trình quên/đặt lại mật khẩu qua token bảo mật; liên kết khóa ngoại địa chỉ người dùng trực tiếp vào đơn hàng khi đặt hàng để lưu trữ vĩnh viễn. |
+| **Quản lý đơn hàng** | ✅ Hoàn thành | `GET /api/v1/orders/{id}/invoice` (Xuất hóa đơn dạng DTO); máy trạng thái đơn hàng nghiêm ngặt và lưu trữ lịch sử trạng thái. | Kiểm tra ràng buộc máy trạng thái hợp lệ, tính toán hóa đơn chi tiết được kiểm thử trong `OrderServiceImplTest`. | Áp dụng máy trạng thái chuyển đổi trạng thái đơn hàng chặt chẽ (`PENDING -> CONFIRMED -> PACKING -> SHIPPING -> DELIVERED -> CANCELLED -> RETURNED`); cung cấp API xuất hóa đơn an toàn. |
+| **Quản lý tồn kho** | ✅ Hoàn thành | Endpoint lịch sử biến động kho `/api/v1/admin/inventory/variants/{variantId}/movements` trả về `MovementResponseDTO`. | Ghi nhận xuất nhập tồn kho và ánh xạ DTO an toàn được kiểm thử qua `InventoryServiceImplTest`. | Thay đổi kiểu dữ liệu trả về từ Entity JPA sang DTO để loại bỏ hoàn toàn nguy cơ lỗi tải chậm (`LazyInitializationException`) trong Jackson. |
+| **Tìm kiếm sản phẩm** | ✅ Hoàn thành | `GET /api/v1/products` tích hợp FTS qua cột `tsv` và GIN Index; API tự động hoàn thành từ khóa gợi ý `GET /api/v1/products/autocomplete`. | Tìm kiếm toàn văn FTS dựa trên chỉ mục và gợi ý từ khóa thông minh được kiểm thử qua `ProductServiceImplTest`. | Thay thế so khớp LIKE bằng tìm kiếm toàn văn tối ưu trên PostgreSQL; cung cấp API gợi ý từ khóa thông minh để nâng cao trải nghiệm người dùng. |
 
-## Các Lỗi Đã Được Khắc Phục Trong Quá Trình Đánh Giá
+---
 
-- Bổ sung schema Flyway bị thiếu để cơ sở dữ liệu PostgreSQL sạch đáp ứng được cấu hình `spring.jpa.hibernate.ddl-auto=validate`.
-- Sửa truy vấn JPA trong `PaymentTransactionRepository` để khớp với trường thực thể `transactionRef` hiện có.
-- Sửa lỗi lưu vết sử dụng mã coupon của đơn hàng để bổ sung `order_id`.
-- Sửa lỗi lưu lịch sử trạng thái đơn hàng để đảm bảo `oldStatus` được ghi lại chính xác trước khi thay đổi.
+## 3. Các Lỗi Đã Được Khắc Phục & Cải Tiến
 
-## Các Bài Kiểm Thử Nghiệm Thu Cần Bổ Sung Sau Khi Hoàn Thành Chức Năng
+1. **Schema Flyway**: Bổ sung migration V3 sạch, xử lý an toàn kiểu ENUM của PostgreSQL bằng cách chuyển đổi sang `VARCHAR(30)` để tránh lỗi khóa bảng khi thay đổi trạng thái đơn hàng.
+2. **Bảo mật**: Mở rộng cấu hình `SecurityConfig` cho phép truy cập công khai tài liệu Swagger UI, các cổng callback thanh toán, tra cứu vận đơn public, giỏ hàng khách và API reset password.
+3. **Repository**: Sửa lỗi truy vấn JPA trong `PaymentTransactionRepository` liên quan đến trường `transactionRef`.
+4. **Order**: Sửa lỗi lưu vết sử dụng mã coupon đơn hàng để lưu đầy đủ `order_id` và capturing chính xác `oldStatus` trước khi cập nhật.
+5. **Inventory**: Loại bỏ nguy cơ lỗi serialize khi sử dụng lazy loading ở controller kho hàng bằng cách triển khai `MovementResponseDTO`.
 
-- Giỏ hàng khách: khách chưa đăng nhập sử dụng `sessionToken` có thể thêm/cập nhật sản phẩm, sau đó người dùng đăng nhập có thể gộp giỏ hàng khách.
-- Bộ lọc sản phẩm: kích thước, màu sắc, giá tối thiểu/tối đa, danh mục, thương hiệu và giới tính có thể được lọc kết hợp.
-- Tìm kiếm: tìm kiếm toàn văn PostgreSQL xếp hạng theo tên/mô tả sản phẩm và tự động gợi ý từ khóa phù hợp.
-- Thanh toán: tạo đơn hàng với MoMo/VNPay/chuyển khoản ngân hàng, lưu trữ dữ liệu `payment_transactions`, xử lý callback từ cổng thanh toán và cập nhật `paymentStatus`.
-- Theo dõi vận đơn: khách hàng có thể tra cứu hành trình vận chuyển của mình mà không cần quyền quản trị viên.
-- Lịch sử sổ kho: endpoint danh sách biến động kho trả về DTOs, không trả trực tiếp thực thể JPA tránh lỗi lazy loading.
+---
+
+## 4. Nghiệm Thu & Khởi Chạy Thử Nghiệm
+
+1. Khởi chạy dự án bằng lệnh:
+   ```powershell
+   .\mvnw.cmd spring-boot:run
+   ```
+2. Truy cập tài liệu Swagger UI để xem và kiểm thử trực quan các API:
+   `http://localhost:8080/swagger-ui/index.html`
+3. Truy cập trang giả lập thanh toán khi thực hiện đặt đơn hàng trực tuyến:
+   `http://localhost:8080/api/v1/payments/mock-checkout`
