@@ -11,7 +11,7 @@ Bản kiểm tra này đánh giá chi tiết tình trạng hoàn thiện giao di
 ## 1. Kiểm Chứng (Verification)
 
 * **Cơ sở dữ liệu (Flyway Schema)**:
-  * Bổ sung migration `V3__add_fts_and_order_updates.sql` hỗ trợ các bảng nhật ký tiến trình (`shipment_status_history`), token khôi phục mật khẩu (`password_reset_tokens`), cột tìm kiếm toàn văn (`tsv` tsvector) và chuyển kiểu dữ liệu cột `status` đơn hàng sang `VARCHAR(30)`.
+  * Bổ dung migration `V3__add_fts_and_order_updates.sql` hỗ trợ các bảng nhật ký tiến trình (`shipment_status_history`), token khôi phục mật khẩu (`password_reset_tokens`), cột tìm kiếm toàn văn (`tsv` tsvector) và chuyển kiểu dữ liệu cột `status` đơn hàng sang `VARCHAR(30)`.
 * **Suite Kiểm thử tự động (Automated Tests)**:
   * Bổ sung suite unit tests Mockito cho toàn bộ nghiệp vụ cốt lõi tại `src/test/java/com/powerranger/fashion_shop_backend/service/` gồm 28 test cases.
   * Chạy lệnh `.\mvnw.cmd clean install` thành công và tất cả các bài test đều đã vượt qua (**BUILD SUCCESS**).
@@ -34,7 +34,101 @@ Bản kiểm tra này đánh giá chi tiết tình trạng hoàn thiện giao di
 
 ---
 
-## 3. Các Lỗi Đã Được Khắc Phục & Cải Tiến
+## 3. Chi Tiết Các Điểm Cuối (Endpoints) Đã Hoàn Thành Theo Phân Hệ
+
+### 📦 Trang sản phẩm + biến thể (Product page + variants)
+* **Quản lý sản phẩm**:
+  * `GET /api/v1/products` - Lọc/liệt kê sản phẩm (Công khai)
+  * `GET /api/v1/products/{slug}` - Lấy chi tiết sản phẩm theo slug (Công khai)
+  * `POST /api/v1/products` - Tạo sản phẩm mới (Admin)
+  * `PUT /api/v1/products/{id}` - Cập nhật sản phẩm (Admin)
+  * `DELETE /api/v1/products/{id}` - Xóa sản phẩm (Admin)
+* **Quản lý biến thể**:
+  * `GET /api/v1/admin/variants` - Liệt kê danh sách biến thể (Admin)
+  * `GET /api/v1/admin/variants/{id}` - Lấy chi tiết biến thể theo ID (Admin)
+  * `POST /api/v1/admin/variants` - Tạo mới biến thể (Admin)
+  * `PUT /api/v1/admin/variants/{id}` - Cập nhật biến thể (Admin)
+  * `DELETE /api/v1/admin/variants/{id}` - Xóa biến thể (Admin)
+* **Quản lý ảnh sản phẩm**:
+  * `POST /api/v1/admin/products/{id}/images` - Thêm ảnh sản phẩm mới (Admin)
+  * `DELETE /api/v1/admin/images/{id}` - Xóa ảnh sản phẩm (Admin)
+  * `PUT /api/v1/admin/images/reorder` - Sắp xếp thứ tự ảnh sản phẩm (Admin)
+
+### 🏷️ Danh mục + bộ lọc (Categories + filters)
+* **Quản lý danh mục**:
+  * `GET /api/v1/categories` - Liệt kê tất cả danh mục (Công khai)
+  * `GET /api/v1/categories/{slug}` - Lấy danh mục theo slug (Công khai)
+  * `POST /api/v1/categories` - Tạo danh mục mới (Admin)
+  * `PUT /api/v1/categories/{id}` - Cập nhật danh mục (Admin)
+  * `DELETE /api/v1/categories/{id}` - Xóa danh mục (Admin)
+* **Quản lý thương hiệu**:
+  * `GET /api/v1/brands` - Liệt kê tất cả thương hiệu (Công khai)
+  * `GET /api/v1/brands/{slug}` - Lấy thương hiệu theo slug (Công khai)
+  * `POST /api/v1/brands` - Tạo thương hiệu mới (Admin)
+  * `PUT /api/v1/brands/{id}` - Cập nhật thương hiệu (Admin)
+  * `DELETE /api/v1/brands/{id}` - Xóa thương hiệu (Admin)
+* **Tìm kiếm nâng cao & Bộ lọc**:
+  * Tích hợp lọc theo `size`, `color`, `minPrice`, `maxPrice`, `brandId`, `categoryId`, `gender`, `sort` trực tiếp trên endpoint `GET /api/v1/products`.
+
+### 🛒 Giỏ hàng khách + đăng nhập (Cart guest + login)
+* **Thao tác giỏ hàng**:
+  * `GET /api/v1/cart` - Lấy thông tin giỏ hàng hiện tại (Đăng nhập / Khách vãng lai với `sessionToken`)
+  * `POST /api/v1/cart/items` - Thêm sản phẩm vào giỏ hàng (Đăng nhập / Khách vãng lai với `sessionToken`)
+  * `PUT /api/v1/cart/items/{itemId}` - Cập nhật số lượng mặt hàng (Đăng nhập / Khách vãng lai với `sessionToken`)
+  * `DELETE /api/v1/cart/items/{itemId}` - Xóa mặt hàng khỏi giỏ (Đăng nhập / Khách vãng lai với `sessionToken`)
+  * `DELETE /api/v1/cart` - Xóa sạch giỏ hàng (Đăng nhập / Khách vãng lai với `sessionToken`)
+
+### 💳 Thanh toán + đặt hàng (Checkout + payment)
+* **Đặt hàng**:
+  * `POST /api/v1/orders` - Đặt đơn hàng mới từ giỏ hàng (Đăng nhập)
+* **Thanh toán giả lập**:
+  * `POST /api/v1/payments/create` - Tạo giao dịch và lấy URL thanh toán (Đăng nhập)
+  * `POST /api/v1/payments/ipn` - Xử lý thông báo tức thời IPN từ cổng thanh toán (Công khai)
+  * `GET /api/v1/payments/callback` - Tiếp nhận callback phản hồi từ cổng thanh toán (Công khai)
+  * `GET /api/v1/payments/mock-checkout` - Trang giao diện Sandbox giả lập thanh toán (Công khai)
+
+### 🚚 Vận chuyển + theo dõi (Shipping + tracking)
+* **Quản lý vận đơn (Admin)**:
+  * `GET /api/v1/admin/shipments/order/{orderId}` - Lấy thông tin vận đơn theo đơn hàng (Admin)
+  * `POST /api/v1/admin/shipments` - Tạo bản ghi vận đơn mới (Admin)
+  * `PATCH /api/v1/admin/shipments/{id}/status` - Cập nhật tiến trình giao hàng (Admin)
+* **Tra cứu công khai (Customer)**:
+  * `GET /api/v1/shipments/{trackingCode}` - Tra cứu chi tiết tiến trình giao hàng công khai (Công khai)
+
+### 👤 Tài khoản + địa chỉ (Account + addresses)
+* **Xác thực & Người dùng**:
+  * `POST /api/v1/auth/register` - Đăng ký tài khoản mới (Công khai)
+  * `POST /api/v1/auth/login` - Đăng nhập nhận token JWT (Công khai)
+  * `POST /api/v1/auth/forgot-password` - Gửi email/token yêu cầu khôi phục mật khẩu (Công khai)
+  * `POST /api/v1/auth/reset-password` - Đặt lại mật khẩu mới dùng token (Công khai)
+* **Quản lý địa chỉ**:
+  * `GET /api/v1/addresses` - Xem sổ địa chỉ cá nhân (Đăng nhập)
+  * `POST /api/v1/addresses` - Thêm địa chỉ mới (Đăng nhập)
+  * `PUT /api/v1/addresses/{id}` - Cập nhật thông tin địa chỉ (Đăng nhập)
+  * `DELETE /api/v1/addresses/{id}` - Xóa địa chỉ (Đăng nhập)
+
+### 📋 Quản lý đơn hàng (Order management)
+* **Theo dõi đơn hàng**:
+  * `GET /api/v1/orders` - Danh sách đơn hàng cá nhân (Đăng nhập)
+  * `GET /api/v1/orders/{id}` - Chi tiết đơn hàng cá nhân (Đăng nhập)
+  * `GET /api/v1/admin/orders` - Lấy toàn bộ danh sách đơn hàng (Admin)
+  * `PATCH /api/v1/admin/orders/{id}/status` - Cập nhật trạng thái đơn hàng (Admin)
+* **Hóa đơn & Lịch sử**:
+  * `GET /api/v1/orders/{id}/invoice` - Xem/xuất hóa đơn dạng DTO (Đăng nhập)
+
+### 📊 Quản lý tồn kho (Inventory management)
+* **Sổ kho & Phiếu kho**:
+  * `GET /api/v1/admin/inventory/variants/{variantId}/movements` - Lấy lịch sử biến động thẻ kho (Admin)
+  * `POST /api/v1/admin/inventory/movements` - Ghi nhận phiếu biến động kho (Admin)
+
+### 🔍 Tìm kiếm sản phẩm (Product search)
+* **Tìm kiếm & Gợi ý**:
+  * `GET /api/v1/products` - Tìm kiếm toàn văn tối ưu qua cột `tsv` (Công khai)
+  * `GET /api/v1/products/autocomplete` - Tự động gợi ý từ khóa thông minh (Công khai)
+
+---
+
+## 4. Các Lỗi Đã Được Khắc Phục & Cải Tiến
 
 1. **Schema Flyway**: Bổ sung migration V3 sạch, xử lý an toàn kiểu ENUM của PostgreSQL bằng cách chuyển đổi sang `VARCHAR(30)` để tránh lỗi khóa bảng khi thay đổi trạng thái đơn hàng.
 2. **Bảo mật**: Mở rộng cấu hình `SecurityConfig` cho phép truy cập công khai tài liệu Swagger UI, các cổng callback thanh toán, tra cứu vận đơn public, giỏ hàng khách và API reset password.
@@ -44,7 +138,7 @@ Bản kiểm tra này đánh giá chi tiết tình trạng hoàn thiện giao di
 
 ---
 
-## 4. Nghiệm Thu & Khởi Chạy Thử Nghiệm
+## 5. Nghiệm Thu & Khởi Chạy Thử Nghiệm
 
 1. Khởi chạy dự án bằng lệnh:
    ```powershell
