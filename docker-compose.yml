@@ -1,17 +1,17 @@
 services:
   db:
     image: postgres:16
-    container_name: mens-fashion-postgres
+    container_name: fashion_shop_postgres
     environment:
-      POSTGRES_DB: mens_fashion
-      POSTGRES_USER: mensfashion
-      POSTGRES_PASSWORD: mensfashion
+      POSTGRES_DB: fashion_shop
+      POSTGRES_USER: fashionshop
+      POSTGRES_PASSWORD: fashionshop
     ports:
       - "5432:5432"
     volumes:
-      - mens_fashion_pgdata:/var/lib/postgresql/data
+      - fashion_shop_pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U mensfashion -d mens_fashion"]
+      test: ["CMD-SHELL", "pg_isready -U fashionshop -d fashion_shop"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -20,14 +20,14 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: mens-fashion-backend
+    container_name: fashion_shop_backend
     depends_on:
       db:
         condition: service_healthy
     environment:
-      DB_URL: jdbc:postgresql://db:5432/mens_fashion
-      DB_USERNAME: mensfashion
-      DB_PASSWORD: mensfashion
+      DB_URL: jdbc:postgresql://db:5432/fashion_shop
+      DB_USERNAME: fashionshop
+      DB_PASSWORD: fashionshop
       JWT_SECRET: dev-docker-secret-change-this-in-production-123456
       JWT_EXPIRATION: PT2H
       CORS_ALLOWED_ORIGINS: http://localhost:5173,http://localhost:3000
@@ -36,4 +36,4 @@ services:
     restart: unless-stopped
 
 volumes:
-  mens_fashion_pgdata:
+  fashion_shop_pgdata:

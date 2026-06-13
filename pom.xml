@@ -9,9 +9,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.powerranger</groupId>
-	<artifactId>mens-fashion-backend</artifactId>
+	<artifactId>fashion_shop_backend</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>mens-fashion-backend</name>
+	<name>fashion_shop_backend</name>
 	<description/>
 	<url/>
 	<licenses>
@@ -111,6 +111,11 @@
 			<artifactId>postgresql</artifactId>
 			<version>1.19.7</version>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+			<version>2.6.0</version>
 		</dependency>
 	</dependencies>
 

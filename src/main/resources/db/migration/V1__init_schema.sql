@@ -465,6 +465,22 @@ COMMIT;
 -- =====================================================================
 BEGIN;
 
+INSERT INTO users (email, phone, password_hash, full_name, is_active, is_admin)
+VALUES (
+    'admin@shop.com',
+    NULL,
+    '$2a$10$ZiMLLxOkGxf9rLHwsjAzruyHWTjoOM8CNvUo/mQm7pIeHnRo0ap9O',
+    'Admin',
+    TRUE,
+    TRUE
+)
+ON CONFLICT (email) DO UPDATE SET
+    password_hash = EXCLUDED.password_hash,
+    full_name = EXCLUDED.full_name,
+    is_active = TRUE,
+    is_admin = TRUE,
+    updated_at = now();
+
 INSERT INTO brands (name, slug) VALUES
     ('Nike', 'nike'), ('Adidas', 'adidas'), ('Local Brand VN', 'local-brand-vn');
 

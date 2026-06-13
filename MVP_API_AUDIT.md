@@ -7,7 +7,7 @@ This audit checks only the backend API surface for the Phase 1 MVP items from th
 ## Verification
 
 - Added PostgreSQL Flyway schema: `src/main/resources/db/migration/V1__init_schema.sql`.
-- Added integration tests: `src/test/java/com/powerranger/mens_fashion_backend/MensFashionBackendApplicationTests.java`.
+- Added integration tests: `src/test/java/com/powerranger/fashion_shop_backend/FashionShopBackendApplicationTests.java`.
 - Ran `mvnw test`: build passed. The integration tests were skipped locally because Docker/Testcontainers could not connect to Docker Desktop.
 - To execute the API tests for real, start Docker Desktop and rerun `mvnw test`.
 
